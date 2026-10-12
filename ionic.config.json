@@ -1,0 +1,7 @@
+{
+  "name": "cleancity",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
