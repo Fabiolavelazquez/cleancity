@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /reportes/{id} {
+      // Solo usuarios autenticados leen
+      allow read: if request.auth != null;
+
+      // Crear: el uid debe ser el del usuario y los datos deben ser válidos
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.titulo is string
+        && request.resource.data.titulo.size() >= 3
+        && request.resource.data.titulo.size() <= 80
+        && request.resource.data.descripcion is string
+        && request.resource.data.descripcion.size() <= 500
+        && request.resource.data.categoria in ['bache', 'luminaria', 'basura', 'otro']
+        && request.resource.data.lat is number
+        && request.resource.data.lng is number
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.createdAt == request.time
+        && (!('foto' in request.resource.data) || request.resource.data.foto.size() < 700000);
+
+      // Solo el dueño puede borrar su reporte; nadie edita
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+  }
+}
